@@ -19,13 +19,18 @@ class ExperimentLogger:
             with open(self.loc / f'{self.name}.pcl.log', 'rb') as log_file:
                 self.logs = pickle.load(log_file)
         else:
-            self.logs = []
+            self.logs = {
+                'values': [],
+                'series': [],
+                'dataframes': [],
+                '2dplots': [],
+                '3dplots': []
+            }
 
 
     def log_value(self, name: str, value: any) -> None:
-        self.logs.append(
+        self.logs['values'].append(
             {
-                'type': 'value',
                 'name': name,
                 'content': value,
                 'timestamp': get_current_time()
@@ -36,9 +41,8 @@ class ExperimentLogger:
 
     
     def log_series(self, name: str, serie: pd.Series) -> None:
-        self.logs.append(
+        self.logs['series'].append(
             {
-                'type': 'series',
                 'name': name,
                 'content': serie.to_dict(),
                 'timestamp': get_current_time()
@@ -48,9 +52,8 @@ class ExperimentLogger:
         self.save_log()
 
     def log_dataframe(self, name: str, dataframe: pd.DataFrame) -> None:
-        self.logs.append(
+        self.logs['dataframes'].append(
             {
-                'type': 'dataframe',
                 'name': name,
                 'content': dataframe.to_dict(),
                 'timestamp': get_current_time()
@@ -60,15 +63,13 @@ class ExperimentLogger:
         self.save_log()
 
 
-    def log_2dplot(self, name: str, **axis) -> None:
+    def log_2dplot(self, name: str, x: dict, y: dict) -> None:
 
-        assert len(axis.keys() == 2), 'Must pass exactly 2 arrays'
-
-        self.logs.append(
+        self.logs['2dplots'].append(
             {
-                'type': '2dplot',
                 'name': name,
-                'content': axis,
+                'x': x,
+                'y': y,
                 'timestamp': get_current_time()
             }
         )
@@ -76,14 +77,14 @@ class ExperimentLogger:
         self.save_log()
 
 
-    def log_3dplot(self, name: str, **axis) -> None:
-        assert len(axis.keys() == 2), 'Must pass exactly 3 arrays'
+    def log_3dplot(self, name: str, x: dict, y: dict, z: dict) -> None:
 
-        self.logs.append(
+        self.logs['3dplots'].append(
             {
-                'type': '3dplot',
                 'name': name,
-                'content': axis,
+                'x': x,
+                'y': y,
+                'z': z,
                 'timestamp': get_current_time()
             }
         )
