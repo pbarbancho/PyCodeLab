@@ -51,8 +51,9 @@ def exp():
 
 
 @exp.command('run')
-@click.option('--caching', type=bool, default=True)
-def exp_run(caching):
+@click.option('--no_cache', is_flag=True)
+@click.option('--no_backup', is_flag=True)
+def exp_run(no_cache, no_backup):
     if os.path.exists('.pcl'):
         with open('.pcl/config.yaml', 'r') as  config_file:
             try:
@@ -97,7 +98,7 @@ def exp_run(caching):
         dataloader = DATALOADERS.get(data_config['type'])
 
         if dataloader:
-            dataset = dataloader(data_name, data_config, caching)
+            dataset = dataloader(data_name, data_config, not no_cache)
 
             sys.path.append('.')
 
@@ -115,26 +116,28 @@ def exp_run(caching):
 
             os.chdir('..')
 
-            experiment_time = datetime.datetime.now()
-            experiment_name = experiment_time.strftime('%Y%m%d%H%M%S')
-            
-            os.makedirs(experiments_path / experiment_name)
+            if not no_backup:
 
-            with open(experiments_path / experiment_name / 'repo_info.yaml', 'w') as repo_file:
-                yaml.dump(repo_info, repo_file)
+                experiment_time = datetime.datetime.now()
+                experiment_name = experiment_time.strftime('%Y%m%d%H%M%S')
+                
+                os.makedirs(experiments_path / experiment_name)
 
-            env_config = {
-                'python_version': platform.python_version(),
-                'pip_list': [requirement for requirement in freeze(local_only=True)]
-            }
+                with open(experiments_path / experiment_name / 'repo_info.yaml', 'w') as repo_file:
+                    yaml.dump(repo_info, repo_file)
 
-            with open(experiments_path / experiment_name / 'env.yaml', 'w') as env_file:
-                yaml.dump(env_config, env_file)
+                env_config = {
+                    'python_version': platform.python_version(),
+                    'pip_list': [requirement for requirement in freeze(local_only=True)]
+                }
 
-            shutil.copytree(workspace_path, experiments_path / experiment_name, dirs_exist_ok=True)
+                with open(experiments_path / experiment_name / 'env.yaml', 'w') as env_file:
+                    yaml.dump(env_config, env_file)
 
-            repo.git.add(experiments_path / experiment_name)
-            repo.git.commit(message=f'[EXPERIMENT] {experiment_name}')
+                shutil.copytree(workspace_path, experiments_path / experiment_name, dirs_exist_ok=True)
+
+                repo.git.add(experiments_path / experiment_name)
+                repo.git.commit(message=f'[EXPERIMENT] {experiment_name}')
 
         else:
             click.echo('Data type not supported')
