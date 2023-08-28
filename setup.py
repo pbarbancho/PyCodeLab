@@ -8,7 +8,8 @@ setup(
         'click >= 8.1.7',
         'gitdb >= 4.0.10',
         'GitPython >= 3.1.32',
-        'PyYAML >= 6.0.1'
+        'PyYAML >= 6.0.1',
+        'pandas >= 2.0.3'
     ],
     entry_points={
         'console_scripts': [
